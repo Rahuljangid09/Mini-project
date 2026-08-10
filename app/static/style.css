@@ -1,0 +1,116 @@
+/* ---------- GLOBAL RESET ---------- */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f4f6f9;
+
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* ---------- HEADER ---------- */
+header {
+    background-color: #2c3e50;
+    color: white;
+    padding: 16px 0;
+    text-align: center;
+}
+
+/* ---------- MAIN CONTENT ---------- */
+main {
+    flex: 1;
+    text-align: center;
+}
+
+/* ---------- INFO SECTION ---------- */
+.info {
+    padding: 60px 20px 30px;
+}
+
+.info h2 {
+    font-size: 32px;
+    margin-bottom: 15px;
+    color: #1f2d3d;
+}
+
+.highlight {
+    color: #3b82f6;
+}
+
+.info p {
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+    color: #555;
+}
+
+/* ---------- UPLOAD SECTION ---------- */
+.upload {
+    margin: 30px 0;
+}
+
+input[type="file"] {
+    padding: 8px;
+}
+
+button {
+    padding: 10px 20px;
+    margin-top: 15px;
+    background-color: #2980b9;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #1f6391;
+}
+
+/* ---------- DOWNLOAD BUTTON ---------- */
+.download-section{
+    margin-top: 60px;
+}
+.download-btn {
+    
+}
+
+.download-btn:hover {
+    background-color: #1e874b;
+}
+
+/* ---------- FOOTER ---------- */
+footer {
+    background-color: #2c3e50;
+    color: white;
+    text-align: center;
+    padding: 15px 0;
+    font-size: 14px;
+}
+
+/* Add this to your existing style.css */
+
+.dashboard-btn {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 12px 28px;
+  background: transparent;
+  color: #3b82f6;
+  border: 2px solid #3b82f6;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.2s;
+  margin-left: 12px;
+}
+
+.dashboard-btn:hover {
+  background: #3b82f6;
+  color: #fff;
+}

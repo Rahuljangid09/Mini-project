@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Result Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f5f6fa;
+      color: #1a1a2e;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 16px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    header h1 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #1a1a2e;
+    }
+
+    .back-btn {
+      font-size: 0.85rem;
+      color: #4a6cf7;
+      text-decoration: none;
+      font-weight: 500;
+      border: 1px solid #4a6cf7;
+      padding: 6px 16px;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .back-btn:hover { background: #4a6cf7; color: #fff; }
+
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    /* Cards */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px 24px;
+      border-left: 4px solid transparent;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+
+    .card.blue   { border-color: #4a6cf7; }
+    .card.green  { border-color: #22c55e; }
+    .card.red    { border-color: #ef4444; }
+    .card.amber  { border-color: #f59e0b; }
+
+    .card-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #94a3b8;
+      margin-bottom: 8px;
+    }
+
+    .card-value {
+      font-size: 2.2rem;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    .card.blue  .card-value { color: #4a6cf7; }
+    .card.green .card-value { color: #22c55e; }
+    .card.red   .card-value { color: #ef4444; }
+    .card.amber .card-value { color: #f59e0b; }
+
+    /* Chart containers */
+    .charts-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .chart-box {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+
+    .chart-box h3 {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    canvas { display: block; }
+
+    /* Insights */
+    .insights-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .insight {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px 24px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .insight-badge {
+      font-size: 1.5rem;
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .insight.hard .insight-badge { background: #fee2e2; }
+    .insight.easy .insight-badge { background: #dcfce7; }
+
+    .insight-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #94a3b8;
+      margin-bottom: 4px;
+    }
+
+    .insight-value {
+      font-size: 1.3rem;
+      font-weight: 600;
+    }
+
+    .insight.hard .insight-value { color: #ef4444; }
+    .insight.easy .insight-value { color: #22c55e; }
+
+    .insight-detail { font-size: 0.8rem; color: #94a3b8; margin-top: 2px; }
+
+    .no-data {
+      text-align: center;
+      padding: 80px 20px;
+    }
+    .no-data h2 { font-size: 1.3rem; margin-bottom: 8px; }
+    .no-data p  { color: #94a3b8; }
+    .no-data a  {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 24px;
+      background: #4a6cf7;
+      color: #fff;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    @media (max-width: 900px) {
+      .cards-grid   { grid-template-columns: repeat(2, 1fr); }
+      .charts-row   { grid-template-columns: 1fr; }
+      .insights-row { grid-template-columns: 1fr; }
+      header        { padding: 14px 20px; }
+      main          { padding: 20px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Result Dashboard</h1>
+  <a href="/" class="back-btn">← Back</a>
+</header>
+
+<main>
+
+{% if not analysis_data %}
+<div class="no-data">
+  <h2>No data available</h2>
+  <p>Upload a PDF first to see the dashboard.</p>
+  <a href="/">Upload PDF</a>
+</div>
+
+{% else %}
+
+<div class="cards-grid">
+  <div class="card blue">
+    <div class="card-label">Total Students</div>
+    <div class="card-value">{{ analysis_data.summary.total_students }}</div>
+  </div>
+  <div class="card green">
+    <div class="card-label">Pass</div>
+    <div class="card-value">{{ analysis_data.summary.pass }}</div>
+  </div>
+  <div class="card red">
+    <div class="card-label">Fail</div>
+    <div class="card-value">{{ analysis_data.summary.fail }}</div>
+  </div>
+  <div class="card amber">
+    <div class="card-label">Pass %</div>
+    <div class="card-value">{{ analysis_data.summary.pass_percent }}%</div>
+  </div>
+</div>
+
+<div class="charts-row">
+  <div class="chart-box">
+    <h3>Pass / Fail / AB</h3>
+    <canvas id="pieChart" height="220"></canvas>
+  </div>
+  <div class="chart-box">
+    <h3>Subject-wise Fail Count</h3>
+    <canvas id="subjectChart" height="220"></canvas>
+  </div>
+</div>
+
+<div class="chart-box">
+  <h3>Grade Distribution</h3>
+  <canvas id="gradeChart" height="180"></canvas>
+</div>
+
+<div class="insights-row">
+
+  {% set hardest = namespace(code="N/A", fail=0) %}
+  {% set easiest = namespace(code="N/A", pass=0) %}
+  {% for sub in analysis_data.subjects %}
+    {% if sub.fail > hardest.fail %}{% set hardest.fail = sub.fail %}{% set hardest.code = sub.code %}{% endif %}
+    {% if sub.pass > easiest.pass %}{% set easiest.pass = sub.pass %}{% set easiest.code = sub.code %}{% endif %}
+  {% endfor %}
+
+  <div class="insight hard">
+    <div class="insight-badge">&#128293;</div>
+    <div>
+      <div class="insight-label">Hardest Subject</div>
+      <div class="insight-value">{{ hardest.code }}</div>
+      <div class="insight-detail">{{ hardest.fail }} student(s) failed</div>
+    </div>
+  </div>
+
+  <div class="insight easy">
+    <div class="insight-badge">&#11088;</div>
+    <div>
+      <div class="insight-label">Easiest Subject</div>
+      <div class="insight-value">{{ easiest.code }}</div>
+      <div class="insight-detail">{{ easiest.pass }} student(s) passed</div>
+    </div>
+  </div>
+
+</div>
+
+{% endif %}
+</main>
+
+<script>
+  const summary  = {{ analysis_data.summary  | tojson }};
+  const subjects = {{ analysis_data.subjects | tojson }};
+  const grades   = {{ analysis_data.grades   | tojson }};
+
+  Chart.defaults.font.family = "'Inter', sans-serif";
+  Chart.defaults.font.size   = 12;
+  Chart.defaults.color       = '#94a3b8';
+
+  new Chart(document.getElementById('pieChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Pass', 'Fail', 'AB'],
+      datasets: [{
+        data: [summary.pass, summary.fail, summary.ab],
+        backgroundColor: ['#22c55e', '#ef4444', '#f59e0b'],
+        borderWidth: 2,
+        borderColor: '#fff',
+        hoverOffset: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      cutout: '60%',
+      plugins: {
+        legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, pointStyleWidth: 10 } }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('subjectChart'), {
+    type: 'bar',
+    data: {
+      labels: subjects.map(s => s.code),
+      datasets: [{
+        label: 'Fail',
+        data: subjects.map(s => s.fail),
+        backgroundColor: '#fca5a5',
+        borderColor: '#ef4444',
+        borderWidth: 1.5,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false } },
+        y: { grid: { color: '#f1f5f9' }, beginAtZero: true, ticks: { stepSize: 1 } }
+      }
+    }
+  });
+
+  const gradeLabels = Object.keys(grades);
+  const gradeValues = Object.values(grades);
+  const palette     = ['#93c5fd','#6ee7b7','#fcd34d','#a5b4fc','#f9a8d4','#86efac','#fca5a5'];
+
+  new Chart(document.getElementById('gradeChart'), {
+    type: 'bar',
+    data: {
+      labels: gradeLabels,
+      datasets: [{
+        label: 'Students',
+        data: gradeValues,
+        backgroundColor: palette,
+        borderColor:      palette.map(c => c),
+        borderWidth: 1.5,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false } },
+        y: { grid: { color: '#f1f5f9' }, beginAtZero: true, ticks: { stepSize: 1 } }
+      }
+    }
+  });
+</script>
+
+</body>
+</html>

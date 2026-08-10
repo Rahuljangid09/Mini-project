@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Result Analysis Automation</title>
+    <link rel="stylesheet" href="../static/style.css" />
+  </head>
+  <body>
+    <!-- HEADER -->
+    <header>
+      <h1>Result Analysis Automation</h1>
+    </header>
+
+    <main>
+      <!-- INFO SECTION -->
+      <section class="info">
+        <h2>
+          Transform Academic Results <br />
+          <span class="highlight">PDF to Excel</span>
+        </h2>
+
+        <p class="sub-text">
+          Convert your academic result PDFs into structured Excel spreadsheets
+          in seconds. Save time, reduce errors, and organize your data
+          efficiently.
+        </p>
+      </section>
+
+      <!-- UPLOAD SECTION -->
+      <section class="upload-section">
+        <p>Select one or more PDF files</p>
+        <p id="file-count"></p>
+        <form action="/upload-pdf" method="post" enctype="multipart/form-data">
+          <input type="file" name="files" accept=".pdf" multiple required />
+          <button type="submit">Upload & Generate Excel</button>
+        </form>
+      </section>
+
+      <!-- DOWNLOAD SECTION -->
+      <section class="download-section">
+        {% if download_link %}
+        <a href="{{ download_link }}" class="download-btn">Download Excel</a>
+        <a href="/dashboard" class="dashboard-btn">View Dashboard</a>
+        {% endif %}
+      </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+      <p>© 2026 Result Analysis Automation | Developed for Academic Use</p>
+    </footer>
+
+    <script>
+      const fileInput = document.querySelector('input[name="files"]');
+      const fileCount = document.getElementById("file-count");
+
+      fileInput.addEventListener("change", function () {
+        if (this.files.length === 1) {
+          fileCount.textContent = "1 file selected";
+        } else {
+          fileCount.textContent = this.files.length + " files selected";
+        }
+      });
+    </script>
+  </body>
+</html>
