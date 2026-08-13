@@ -7,7 +7,7 @@ from openpyxl.utils import get_column_letter
 
 # ─── Constants ────────────────────────────────────────────────────────────────
 
-VALID_GRADES = {"O", "A+", "A", "B+", "B", "P"}
+VALID_GRADES = {"O", "A+", "A", "B+", "B", "C", "P"}
 
 HEADER_FILL = PatternFill("solid", start_color="2F5496", end_color="2F5496")
 HEADER_FONT = Font(bold=True, color="FFFFFF", name="Arial", size=10)
@@ -116,7 +116,7 @@ def _table1(all_students, all_codes):
 def _table2(all_students, all_codes):
     rows = []
     for code in all_codes:
-        counts = {g: 0 for g in ["O", "A+", "A", "B+", "B", "P"]}
+        counts = {g: 0 for g in ["O", "A+", "A", "B+", "B", "C", "P"]}
         for s in all_students:
             for sub in s.get("subjects", []):
                 if _subject_code(sub) != code:
