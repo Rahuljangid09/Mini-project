@@ -38,7 +38,7 @@ def parse_ledger(raw_text: str) -> list:
 
         name     = _extract_name(lines[0])
         sgpa     = _extract_sgpa(block)
-        subjects = _extract_first5_subjects(lines[1:])
+        subjects = _extract_all_subjects(lines[1:])
         status   = _get_status(subjects)
 
         students.append({
@@ -83,7 +83,10 @@ def _parse_subject_line(line: str) -> dict | None:
       CODE * IN  TH  IN+TH  TW  PR  OR  Tot%  Crd  Grd  GP  CP  P&R  ORD
        idx:  0   1    2      3   4   5    6     7    8    9  10  11   12
 
-    We extract only: IN(0), TH(1), Tot%(6), Grd(8)
+    Theory subjects fill IN/TH/Tot%; lab/project subjects fill TW and/or
+    PR/OR instead (IN/TH/others stay "---"). We keep all of them so the
+    excel writer can decide, per subject, which sub-columns actually
+    have data.
     """
     m = SUBJECT_RE.match(line.strip())
     if not m:
@@ -99,23 +102,30 @@ def _parse_subject_line(line: str) -> dict | None:
 
     return {
         "merge_key": merge_key,
-        "IN":    tokens[0],   # Internal marks  e.g. 017/030
-        "TH":    tokens[1],   # Theory marks    e.g. 034/070
-        "TOTAL": tokens[6],   # Tot%            e.g. 51 or FF
-        "GRADE": tokens[8],   # Grade           e.g. B, A+, O, F
+        "IN":    tokens[0],   # Internal / ISE   e.g. 017/030
+        "TH":    tokens[1],   # Theory / ESE     e.g. 034/070
+        "TW":    tokens[3],   # Term Work / TV
+        "PR":    tokens[4],   # Practical
+        "OR":    tokens[5],   # Oral
+        "TOTAL": tokens[6],   # Tot%             e.g. 51 or FF
+        "GRADE": tokens[8],   # Grade            e.g. B, A+, O, F
     }
 
 
 def _merge_subjects(existing: dict, new: dict) -> dict:
     """Fill missing fields from the second row of the same subject code."""
-    for field in ["IN", "TH", "TOTAL", "GRADE"]:
+    for field in ["IN", "TH", "TW", "PR", "OR", "TOTAL", "GRADE"]:
         if existing.get(field, "---") in ("---", "") \
                 and new.get(field, "---") not in ("---", ""):
             existing[field] = new[field]
     return existing
 
 
-def _extract_first5_subjects(lines: list) -> list:
+def _extract_all_subjects(lines: list) -> list:
+    """
+    Extracts every unique subject for a student — no count cap.
+    (Previously capped at the first 5 subjects; that limit is removed.)
+    """
     subj_map   = {}   # merge_key → subject dict
     subj_order = []   # preserve first-seen order
 
@@ -130,9 +140,7 @@ def _extract_first5_subjects(lines: list) -> list:
         else:
             subj_map[k] = _merge_subjects(subj_map[k], s)
 
-    # Return only the first 5 unique subjects
-    # NOTE: this [:5] cap is exactly what Issue 3 (all-subjects) removes next.
-    return [subj_map[k] for k in subj_order[:5]]
+    return [subj_map[k] for k in subj_order]
 
 
 # ── STATUS LOGIC ──────────────────────────────────────────────────────────────
