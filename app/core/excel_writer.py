@@ -1,6 +1,6 @@
 import pandas as pd
 import os
-from openpyxl import load_workbook
+from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
@@ -79,7 +79,7 @@ def _write_table(ws, df, title, start_row, start_col=1):
     return data_start + len(df)
 
 
-# ─── Table Builders ───────────────────────────────────────────────────────────
+# ─── Table Builders (Analysis sheet) ──────────────────────────────────────────
 
 def _table1(all_students, all_codes):
     rows = []
@@ -172,7 +172,7 @@ def _add_analysis_sheet(path, all_students, all_codes):
     wb.close()
 
 
-# ─── Per-subject dynamic sub-columns ──────────────────────────────────────────
+# ─── Per-subject dynamic sub-columns (Raw Data sheet) ─────────────────────────
 
 # (display label, source field in the parsed subject dict)
 _POSSIBLE_SUBCOLS = [
@@ -182,6 +182,7 @@ _POSSIBLE_SUBCOLS = [
     ("TV",    "TW"),
     ("PR",    "PR"),
     ("OR",    "OR"),
+    ("TUT",   "TUT"),
 ]
 
 def _blank(v) -> bool:
@@ -190,22 +191,32 @@ def _blank(v) -> bool:
 
 def _active_subcolumns(all_students, code):
     """
-    Only include a sub-column (ISE/ESE/TOTAL/TV/PR/OR) for this subject
-    code if at least one student has real data in it. GRADE is always
-    included. This is what makes theory subjects show ISE/ESE/TOTAL and
-    lab/project subjects show only TV/PR/OR as applicable — no manual
-    column deletion needed.
+    Column rules (per subject code):
+      - ISE and ESE shown if that subject has data for them.
+      - TOTAL shown only when BOTH ISE and ESE are present (theory subjects).
+      - TW/PR/OR/TUT shown independently, whenever present.
+      - GRADE is never shown in Raw Data anymore.
     """
-    active = []
-    for label, field in _POSSIBLE_SUBCOLS:
-        has_data = any(
+    def has_data(field):
+        return any(
             _subject_code(sub) == code and not _blank(sub.get(field, ""))
             for s in all_students
             for sub in s.get("subjects", [])
         )
-        if has_data:
+
+    has_ise = has_data("IN")
+    has_ese = has_data("TH")
+
+    active = []
+    if has_ise:
+        active.append(("ISE", "IN"))
+    if has_ese:
+        active.append(("ESE", "TH"))
+    if has_ise and has_ese:
+        active.append(("TOTAL", "TOTAL"))
+    for label, field in [("TV", "TW"), ("PR", "PR"), ("OR", "OR"), ("TUT", "TUT")]:
+        if has_data(field):
             active.append((label, field))
-    active.append(("GRADE", "GRADE"))
     return active
 
 
@@ -247,9 +258,8 @@ def _autofit_columns(ws, n_cols):
 def generate_excel(all_students: list) -> str:
     """
     Each student → one row. Every subject present in the ledger is
-    included (no 5-subject cap). Each subject gets only the sub-columns
-    it actually has data for (e.g. theory: ISE/ESE/TOTAL/GRADE, lab: TV/GRADE,
-    lab with oral: TV/OR/GRADE), grouped under a merged subject-code header.
+    included (no cap). Each subject gets only the sub-columns it
+    actually has data for, grouped under a merged subject-code header.
     """
 
     # ── Collect every subject code, in first-seen order, no cap ──────────────
@@ -268,7 +278,7 @@ def generate_excel(all_students: list) -> str:
         for label, field in _active_subcolumns(all_students, code):
             subject_columns.append((code, label, field))
 
-    # ── Build two-level column headers (merged cells via pandas MultiIndex) ──
+    # ── Build two-level column headers ────────────────────────────────────────
     col_tuples = [("Seat No", ""), ("Student Name", "")]
     col_tuples += [(code, label) for code, label, _ in subject_columns]
     col_tuples += [("Final Status", "")]
@@ -288,34 +298,32 @@ def generate_excel(all_students: list) -> str:
     os.makedirs("outputs", exist_ok=True)
     path = "outputs/result_analysis.xlsx"
 
-    from openpyxl import Workbook
     wb = Workbook()
     ws = wb.active
     ws.title = "Raw Data"
 
     n_cols = len(col_tuples)
 
-    # Row 1: top-level labels, merging consecutive cells with the same code
-    # Row 2: sub-column labels (blank for the fixed Seat No / Name / Status cols)
     c = 1
     while c <= n_cols:
         top_label = col_tuples[c - 1][0]
+        is_fixed = top_label in ("Seat No", "Student Name", "Final Status")
         span = 1
-        while c + span - 1 < n_cols and col_tuples[c + span - 1][0] == top_label \
-                and top_label not in ("Seat No", "Student Name", "Final Status"):
-            span += 1
+        if not is_fixed:
+            while c + span - 1 < n_cols and col_tuples[c + span - 1][0] == top_label:
+                span += 1
         ws.cell(row=1, column=c, value=top_label)
-        if span > 1:
-            ws.merge_cells(start_row=1, start_column=c, end_row=1, end_column=c + span - 1)
-        else:
+        if is_fixed:
             ws.merge_cells(start_row=1, start_column=c, end_row=2, end_column=c)
+        elif span > 1:
+            ws.merge_cells(start_row=1, start_column=c, end_row=1, end_column=c + span - 1)
+        # span == 1 subject column: no merge needed, row 2 keeps its own label
         c += span
 
     for i, (top, sub) in enumerate(col_tuples, start=1):
         if top not in ("Seat No", "Student Name", "Final Status"):
             ws.cell(row=2, column=i, value=sub)
 
-    # Data rows
     for r_off, row_data in enumerate(rows, start=3):
         for i, val in enumerate(row_data, start=1):
             ws.cell(row=r_off, column=i, value=val)
@@ -327,7 +335,7 @@ def generate_excel(all_students: list) -> str:
 
     wb.save(path)
 
-    # ── Add Sheet 2 (now covers every subject, not just the first 5) ─────────
+    # ── Add Sheet 2 (covers every subject, no cap) ────────────────────────────
     _add_analysis_sheet(path, all_students, all_codes)
 
     return path
