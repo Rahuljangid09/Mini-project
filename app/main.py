@@ -8,6 +8,8 @@ import uuid
 import os
 import shutil
 
+from app.core.format_detector import FORMAT_2019, detect_format, detect_format
+from app.core.nep_parser import parse_ledger_nep
 from app.core.pdf_parser import extract_text_from_pdf, parse_ledger
 from app.core.excel_writer import generate_excel
 from app.core.analysis_builder import build_analysis_data
@@ -45,8 +47,12 @@ async def upload_pdf(request: Request, files: List[UploadFile] = File(...)):
             with open(pdf_path, "wb") as buffer:
                 shutil.copyfileobj(file.file, buffer)
 
-            raw_text = extract_text_from_pdf(pdf_path)
-            students = parse_ledger(raw_text)
+            fmt = detect_format(pdf_path)
+            if fmt == FORMAT_2019:
+                raw_text = extract_text_from_pdf(pdf_path)
+                students = parse_ledger(raw_text)
+            else:  # FORMAT_2024_NEP
+                students = parse_ledger_nep(pdf_path)
 
             if not students:
                 failed_files.append(file.filename)
