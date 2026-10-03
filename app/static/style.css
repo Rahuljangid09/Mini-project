@@ -383,6 +383,24 @@ footer {
     margin-top: 4px;
 }
 
+/* Subject lookup status + section hints */
+.subject-status {
+    margin: 12px 0 0;
+    font-size: 0.82rem;
+    padding: 8px 12px;
+    border-radius: 6px;
+}
+
+.subject-status.checking { color: #64748b; background: #f1f5f9; }
+.subject-status.found     { color: #166534; background: #dcfce7; }
+.subject-status.new       { color: #1e40af; background: #dbeafe; }
+
+.section-hint {
+    margin: 0 0 14px;
+    font-size: 0.82rem;
+    color: #64748b;
+}
+
 @media (max-width: 800px) {
     .form-grid { grid-template-columns: 1fr; }
     .obe-main { padding: 20px 16px; }

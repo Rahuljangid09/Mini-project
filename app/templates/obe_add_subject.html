@@ -24,10 +24,10 @@
           <h3>Subject Info</h3>
           <div class="form-grid">
             <label>Subject Code
-              <input type="text" name="subject_code" placeholder="e.g. 404181" required />
+              <input type="text" id="subject-code" name="subject_code" placeholder="e.g. 404181" required />
             </label>
             <label>Subject Name
-              <input type="text" name="subject_name" placeholder="e.g. Radiation & Microwave Theory" required />
+              <input type="text" id="subject-name" name="subject_name" placeholder="e.g. Radiation & Microwave Theory" required />
             </label>
             <label>Academic Year
               <input type="text" name="academic_year" placeholder="e.g. 2023-24" required />
@@ -39,17 +39,20 @@
               <input type="number" id="co-count" min="1" max="12" value="6" required />
             </label>
           </div>
+          <p id="subject-status" class="subject-status"></p>
         </section>
 
         <!-- SECTION 2: Course Outcomes -->
         <section class="form-section">
           <h3>Course Outcomes</h3>
+          <p class="section-hint" id="co-hint">Fill in each CO's description.</p>
           <div id="co-text-rows" class="co-text-rows"></div>
         </section>
 
         <!-- SECTION 3: CO-PO/PSO Mapping -->
         <section class="form-section">
           <h3>CO-PO / PSO Mapping</h3>
+          <p class="section-hint" id="mapping-hint">Set the mapping value (0–3) for each CO against every PO/PSO.</p>
           <div class="mapping-scroll">
             <table class="mapping-table" id="mapping-table">
               <thead>
@@ -63,6 +66,7 @@
         <!-- SECTION 4: CO Targets -->
         <section class="form-section">
           <h3>CO Targets</h3>
+          <p class="section-hint">Targets are set fresh every academic year (based on the previous year's attainment) — always required, never pre-filled.</p>
           <div id="co-target-rows" class="co-target-rows"></div>
         </section>
 
@@ -77,11 +81,18 @@
     <script>
       const POS = ["PO1","PO2","PO3","PO4","PO5","PO6","PO7","PO8","PO9","PO10","PO11","PO12","PSO1","PSO2","PSO3"];
 
-      const coCountInput = document.getElementById("co-count");
-      const coTextRows   = document.getElementById("co-text-rows");
-      const coTargetRows = document.getElementById("co-target-rows");
+      const subjectCodeInput = document.getElementById("subject-code");
+      const subjectNameInput = document.getElementById("subject-name");
+      const coCountInput     = document.getElementById("co-count");
+      const coTextRows       = document.getElementById("co-text-rows");
+      const coTargetRows     = document.getElementById("co-target-rows");
       const mappingHeaderRow = document.getElementById("mapping-header-row");
-      const mappingBody  = document.getElementById("mapping-body");
+      const mappingBody      = document.getElementById("mapping-body");
+      const statusEl         = document.getElementById("subject-status");
+      const coHint           = document.getElementById("co-hint");
+      const mappingHint      = document.getElementById("mapping-hint");
+
+      let existingData = null; // set when a known subject's CO/mapping is loaded
 
       function buildMappingHeader() {
         mappingHeaderRow.innerHTML = "<th>CO</th>" + POS.map(p => `<th>${p}</th>`).join("");
@@ -95,29 +106,33 @@
         mappingBody.innerHTML = "";
 
         for (let i = 1; i <= n; i++) {
-          // CO text row
+          const coText = existingData && existingData.co_text && existingData.co_text[i] ? existingData.co_text[i] : "";
+
+          // CO text row (pre-filled + editable if existing data was found)
           const textRow = document.createElement("label");
           textRow.className = "co-text-row";
           textRow.innerHTML = `CO${i}
-            <input type="text" name="co_text_${i}" placeholder="Describe CO${i}" required />`;
+            <input type="text" name="co_text_${i}" placeholder="Describe CO${i}" value="${coText}" required />`;
           coTextRows.appendChild(textRow);
 
-          // CO target row
+          // CO target row — always blank, always required, never pre-filled
           const targetRow = document.createElement("label");
           targetRow.className = "co-target-row";
           targetRow.innerHTML = `CO${i} Target (%)
             <input type="number" name="co_target_${i}" min="0" max="100" step="0.1" required />`;
           coTargetRows.appendChild(targetRow);
 
-          // Mapping grid row
+          // Mapping grid row (pre-filled + editable if existing data was found)
           const mapRow = document.createElement("tr");
           let cells = `<td class="mapping-co-label">CO${i}</td>`;
           POS.forEach(po => {
+            const existingVal = existingData && existingData.mapping && existingData.mapping[i]
+              ? (existingData.mapping[i][po] ?? 0) : 0;
             cells += `<td><select name="map_${i}_${po}">
-              <option value="0">–</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
+              <option value="0" ${existingVal === 0 ? "selected" : ""}>–</option>
+              <option value="1" ${existingVal === 1 ? "selected" : ""}>1</option>
+              <option value="2" ${existingVal === 2 ? "selected" : ""}>2</option>
+              <option value="3" ${existingVal === 3 ? "selected" : ""}>3</option>
             </select></td>`;
           });
           mapRow.innerHTML = cells;
@@ -125,8 +140,49 @@
         }
       }
 
+      async function checkExistingSubject() {
+        const code = subjectCodeInput.value.trim();
+        if (!code) {
+          statusEl.textContent = "";
+          existingData = null;
+          return;
+        }
+
+        statusEl.textContent = "Checking subject code…";
+        statusEl.className = "subject-status checking";
+
+        try {
+          const res = await fetch(`/obe/subject-lookup?code=${encodeURIComponent(code)}`);
+          if (res.ok) {
+            const data = await res.json();
+            existingData = data;
+            subjectNameInput.value = data.subject_name || subjectNameInput.value;
+            coCountInput.value = data.co_count || coCountInput.value;
+            statusEl.textContent = `✓ Existing subject found — CO descriptions and mapping loaded from the last saved version (${data.academic_year || "previous year"}). Edit only if the curriculum has changed.`;
+            statusEl.className = "subject-status found";
+            coHint.textContent = "Loaded from the existing subject — review and edit only if needed.";
+            mappingHint.textContent = "Loaded from the existing subject — review and edit only if needed.";
+          } else {
+            existingData = null;
+            statusEl.textContent = "New subject — fill in Course Outcomes and Mapping below.";
+            statusEl.className = "subject-status new";
+            coHint.textContent = "Fill in each CO's description.";
+            mappingHint.textContent = "Set the mapping value (0–3) for each CO against every PO/PSO.";
+          }
+        } catch (err) {
+          // Backend not wired up yet — expected for now, treat as a new subject.
+          existingData = null;
+          statusEl.textContent = "New subject — fill in Course Outcomes and Mapping below.";
+          statusEl.className = "subject-status new";
+        }
+
+        rebuildRows();
+      }
+
       buildMappingHeader();
       rebuildRows();
+
+      subjectCodeInput.addEventListener("blur", checkExistingSubject);
       coCountInput.addEventListener("change", rebuildRows);
 
       document.getElementById("add-subject-form").addEventListener("submit", function (e) {
