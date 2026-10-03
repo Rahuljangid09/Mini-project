@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Subject — OBE Attainment</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    {% set active_tab = "obe" %}
+    {% include "_navbar.html" %}
+
+    <main class="obe-main">
+      <div class="obe-toolbar">
+        <h2>Add Subject</h2>
+        <a href="/obe" class="btn-small btn-ghost">← Back to subjects</a>
+      </div>
+
+      <form id="add-subject-form" class="subject-form">
+
+        <!-- SECTION 1: Subject Info -->
+        <section class="form-section">
+          <h3>Subject Info</h3>
+          <div class="form-grid">
+            <label>Subject Code
+              <input type="text" name="subject_code" placeholder="e.g. 404181" required />
+            </label>
+            <label>Subject Name
+              <input type="text" name="subject_name" placeholder="e.g. Radiation & Microwave Theory" required />
+            </label>
+            <label>Academic Year
+              <input type="text" name="academic_year" placeholder="e.g. 2023-24" required />
+            </label>
+            <label>Semester
+              <input type="text" name="semester" placeholder="e.g. SEM-I" required />
+            </label>
+            <label>Number of COs
+              <input type="number" id="co-count" min="1" max="12" value="6" required />
+            </label>
+          </div>
+        </section>
+
+        <!-- SECTION 2: Course Outcomes -->
+        <section class="form-section">
+          <h3>Course Outcomes</h3>
+          <div id="co-text-rows" class="co-text-rows"></div>
+        </section>
+
+        <!-- SECTION 3: CO-PO/PSO Mapping -->
+        <section class="form-section">
+          <h3>CO-PO / PSO Mapping</h3>
+          <div class="mapping-scroll">
+            <table class="mapping-table" id="mapping-table">
+              <thead>
+                <tr id="mapping-header-row"><th>CO</th></tr>
+              </thead>
+              <tbody id="mapping-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- SECTION 4: CO Targets -->
+        <section class="form-section">
+          <h3>CO Targets</h3>
+          <div id="co-target-rows" class="co-target-rows"></div>
+        </section>
+
+        <button type="submit" class="btn-primary btn-save">Save Subject</button>
+      </form>
+    </main>
+
+    <footer>
+      <p>© 2026 Automated Outcome-Based Attainment System | Developed for Academic Use</p>
+    </footer>
+
+    <script>
+      const POS = ["PO1","PO2","PO3","PO4","PO5","PO6","PO7","PO8","PO9","PO10","PO11","PO12","PSO1","PSO2","PSO3"];
+
+      const coCountInput = document.getElementById("co-count");
+      const coTextRows   = document.getElementById("co-text-rows");
+      const coTargetRows = document.getElementById("co-target-rows");
+      const mappingHeaderRow = document.getElementById("mapping-header-row");
+      const mappingBody  = document.getElementById("mapping-body");
+
+      function buildMappingHeader() {
+        mappingHeaderRow.innerHTML = "<th>CO</th>" + POS.map(p => `<th>${p}</th>`).join("");
+      }
+
+      function rebuildRows() {
+        const n = Math.max(1, Math.min(12, parseInt(coCountInput.value) || 1));
+
+        coTextRows.innerHTML = "";
+        coTargetRows.innerHTML = "";
+        mappingBody.innerHTML = "";
+
+        for (let i = 1; i <= n; i++) {
+          // CO text row
+          const textRow = document.createElement("label");
+          textRow.className = "co-text-row";
+          textRow.innerHTML = `CO${i}
+            <input type="text" name="co_text_${i}" placeholder="Describe CO${i}" required />`;
+          coTextRows.appendChild(textRow);
+
+          // CO target row
+          const targetRow = document.createElement("label");
+          targetRow.className = "co-target-row";
+          targetRow.innerHTML = `CO${i} Target (%)
+            <input type="number" name="co_target_${i}" min="0" max="100" step="0.1" required />`;
+          coTargetRows.appendChild(targetRow);
+
+          // Mapping grid row
+          const mapRow = document.createElement("tr");
+          let cells = `<td class="mapping-co-label">CO${i}</td>`;
+          POS.forEach(po => {
+            cells += `<td><select name="map_${i}_${po}">
+              <option value="0">–</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+            </select></td>`;
+          });
+          mapRow.innerHTML = cells;
+          mappingBody.appendChild(mapRow);
+        }
+      }
+
+      buildMappingHeader();
+      rebuildRows();
+      coCountInput.addEventListener("change", rebuildRows);
+
+      document.getElementById("add-subject-form").addEventListener("submit", function (e) {
+        e.preventDefault();
+        alert("Backend not wired up yet — this is the frontend only.");
+      });
+    </script>
+  </body>
+</html>

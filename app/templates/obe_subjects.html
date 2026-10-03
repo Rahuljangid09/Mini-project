@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OBE Attainment</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    {% set active_tab = "obe" %}
+    {% include "_navbar.html" %}
+
+    <main class="obe-main">
+      <div class="obe-toolbar">
+        <h2>Subjects</h2>
+        <div class="obe-toolbar-actions">
+          <select class="year-filter">
+            <option>2023-24</option>
+            <option>2022-23</option>
+          </select>
+          <a href="/obe/add-subject" class="btn-primary">+ Add Subject</a>
+        </div>
+      </div>
+
+      <table class="obe-table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Subject Name</th>
+            <th>Academic Year</th>
+            <th>Semester</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Placeholder rows — backend will loop over real subjects here -->
+          <tr>
+            <td>404181</td>
+            <td>Radiation &amp; Microwave Theory</td>
+            <td>2022-23</td>
+            <td>SEM-I</td>
+            <td class="row-actions">
+              <button class="btn-small">Upload Marks</button>
+              <button class="btn-small">Generate Report</button>
+              <button class="btn-small btn-ghost">Edit</button>
+            </td>
+          </tr>
+          <tr>
+            <td>404182</td>
+            <td>VLSI Design &amp; Technology</td>
+            <td>2022-23</td>
+            <td>SEM-I</td>
+            <td class="row-actions">
+              <button class="btn-small">Upload Marks</button>
+              <button class="btn-small">Generate Report</button>
+              <button class="btn-small btn-ghost">Edit</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="obe-summary-bar">
+        <div>
+          <strong>Department Summary</strong>
+          <p>Combine every subject's attainment into one department-wide report for the selected academic year.</p>
+        </div>
+        <button class="btn-primary">Generate Summary</button>
+      </div>
+    </main>
+
+    <footer>
+      <p>© 2026 Automated Outcome-Based Attainment System | Developed for Academic Use</p>
+    </footer>
+  </body>
+</html>

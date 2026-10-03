@@ -89,6 +89,14 @@ def dashboard(request: Request):
     {"analysis_data": app_state.get_analysis_data()},
 )
 
+@app.get("/obe", response_class=HTMLResponse)
+def obe_subjects(request: Request):
+    return templates.TemplateResponse(request, "obe_subjects.html", {})
+
+@app.get("/obe/add-subject", response_class=HTMLResponse)
+def obe_add_subject(request: Request):
+    return templates.TemplateResponse(request, "obe_add_subject.html", {})
+
 
 @app.get("/download/{filename}")
 def download_file(filename: str):

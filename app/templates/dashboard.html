@@ -4,44 +4,19 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Result Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/static/style.css"/>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; }
 
     body {
       font-family: 'Inter', sans-serif;
       background: #f5f6fa;
       color: #1a1a2e;
       min-height: 100vh;
+      margin: 0;
     }
-
-    header {
-      background: #fff;
-      border-bottom: 1px solid #e2e8f0;
-      padding: 16px 40px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    header h1 {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: #1a1a2e;
-    }
-
-    .back-btn {
-      font-size: 0.85rem;
-      color: #4a6cf7;
-      text-decoration: none;
-      font-weight: 500;
-      border: 1px solid #4a6cf7;
-      padding: 6px 16px;
-      border-radius: 6px;
-      transition: all 0.2s;
-    }
-    .back-btn:hover { background: #4a6cf7; color: #fff; }
 
     main {
       max-width: 1200px;
@@ -52,12 +27,7 @@
       gap: 28px;
     }
 
-    /* Cards */
-    .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-    }
+    .cards-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
 
     .card {
       background: #fff;
@@ -67,138 +37,85 @@
       box-shadow: 0 1px 4px rgba(0,0,0,0.06);
     }
 
-    .card.blue   { border-color: #4a6cf7; }
+    .card.blue   { border-color: #2563eb; }
     .card.green  { border-color: #22c55e; }
     .card.red    { border-color: #ef4444; }
     .card.amber  { border-color: #f59e0b; }
 
     .card-label {
-      font-size: 0.72rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      color: #94a3b8;
-      margin-bottom: 8px;
+      font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.8px; color: #94a3b8; margin-bottom: 8px;
     }
 
-    .card-value {
-      font-size: 2.2rem;
-      font-weight: 600;
-      line-height: 1;
-    }
+    .card-value { font-size: 2.2rem; font-weight: 600; line-height: 1; }
 
-    .card.blue  .card-value { color: #4a6cf7; }
+    .card.blue  .card-value { color: #2563eb; }
     .card.green .card-value { color: #22c55e; }
     .card.red   .card-value { color: #ef4444; }
     .card.amber .card-value { color: #f59e0b; }
 
-    /* Chart containers */
-    .charts-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-    }
+    .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 
     .chart-box {
-      background: #fff;
-      border-radius: 12px;
-      padding: 24px;
+      background: #fff; border-radius: 12px; padding: 24px;
       box-shadow: 0 1px 4px rgba(0,0,0,0.06);
     }
 
     .chart-box h3 {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #475569;
-      margin-bottom: 20px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      font-size: 0.85rem; font-weight: 600; color: #475569;
+      margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.5px;
     }
 
     canvas { display: block; }
 
-    /* Insights */
-    .insights-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
+    .insights-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
     .insight {
-      background: #fff;
-      border-radius: 12px;
-      padding: 20px 24px;
+      background: #fff; border-radius: 12px; padding: 20px 24px;
       box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-      display: flex;
-      align-items: center;
-      gap: 16px;
+      display: flex; align-items: center; gap: 16px;
     }
 
     .insight-badge {
-      font-size: 1.5rem;
-      width: 48px;
-      height: 48px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
+      font-size: 1.5rem; width: 48px; height: 48px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
 
     .insight.hard .insight-badge { background: #fee2e2; }
     .insight.easy .insight-badge { background: #dcfce7; }
 
     .insight-label {
-      font-size: 0.72rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      color: #94a3b8;
-      margin-bottom: 4px;
+      font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.8px; color: #94a3b8; margin-bottom: 4px;
     }
 
-    .insight-value {
-      font-size: 1.3rem;
-      font-weight: 600;
-    }
+    .insight-value { font-size: 1.3rem; font-weight: 600; }
 
     .insight.hard .insight-value { color: #ef4444; }
     .insight.easy .insight-value { color: #22c55e; }
 
     .insight-detail { font-size: 0.8rem; color: #94a3b8; margin-top: 2px; }
 
-    .no-data {
-      text-align: center;
-      padding: 80px 20px;
-    }
+    .no-data { text-align: center; padding: 80px 20px; }
     .no-data h2 { font-size: 1.3rem; margin-bottom: 8px; }
     .no-data p  { color: #94a3b8; }
     .no-data a  {
-      display: inline-block;
-      margin-top: 20px;
-      padding: 10px 24px;
-      background: #4a6cf7;
-      color: #fff;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: 500;
+      display: inline-block; margin-top: 20px; padding: 10px 24px;
+      background: #2563eb; color: #fff; border-radius: 8px;
+      text-decoration: none; font-weight: 500;
     }
 
     @media (max-width: 900px) {
       .cards-grid   { grid-template-columns: repeat(2, 1fr); }
       .charts-row   { grid-template-columns: 1fr; }
       .insights-row { grid-template-columns: 1fr; }
-      header        { padding: 14px 20px; }
       main          { padding: 20px 16px; }
     }
   </style>
 </head>
 <body>
 
-<header>
-  <h1>Result Dashboard</h1>
-  <a href="/" class="back-btn">← Back</a>
-</header>
+{% include "_navbar.html" %}
 
 <main>
 

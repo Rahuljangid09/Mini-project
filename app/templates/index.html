@@ -2,14 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Result Analysis Automation</title>
-    <link rel="stylesheet" href="../static/style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/style.css" />
   </head>
   <body>
-    <!-- HEADER -->
-    <header>
-      <h1>Result Analysis Automation</h1>
-    </header>
+    {% include "_navbar.html" %}
 
     <main>
       <!-- INFO SECTION -->
@@ -32,7 +31,7 @@
         <p id="file-count"></p>
         <form action="/upload-pdf" method="post" enctype="multipart/form-data">
           <input type="file" name="files" accept=".pdf" multiple required />
-          <button type="submit">Upload & Generate Excel</button>
+          <button type="submit">Upload &amp; Generate Excel</button>
         </form>
       </section>
 
@@ -45,9 +44,8 @@
       </section>
     </main>
 
-    <!-- FOOTER -->
     <footer>
-      <p>© 2026 Result Analysis Automation | Developed for Academic Use</p>
+      <p>© 2026 Automated Outcome-Based Attainment System | Developed for Academic Use</p>
     </footer>
 
     <script>
